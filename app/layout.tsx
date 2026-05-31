@@ -8,8 +8,9 @@ import { allCategoriesQuery } from "@/lib/sanity/queries";
 import type { Category } from "@/lib/types/product";
 
 export const metadata: Metadata = {
-  title: "MyShop — вітрина одягу",
-  description: "Стильна вітрина одягу для щоденних образів.",
+  title: "MyShop — сучасна вітрина одягу",
+  description:
+    "Онлайн-вітрина одягу з каталогом товарів, пошуком, обраним і сторінками категорій.",
 };
 
 export const revalidate = 60;
