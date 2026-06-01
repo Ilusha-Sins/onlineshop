@@ -56,6 +56,7 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
                     ? "border-neutral-950"
                     : "border-neutral-200 hover:border-neutral-500"
                 }`}
+                aria-label={`Відкрити фото ${index + 1}`}
               >
                 <Image
                   src={urlFor(image).width(300).height(300).url()}

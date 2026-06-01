@@ -15,8 +15,12 @@ const FavoriteButton: React.FC<FavoriteButtonProps> = ({ product }) => {
   return (
     <button
       type="button"
-      onClick={() => toggleFavorite(product)}
-      className={`flex h-11 w-11 items-center justify-center rounded-full border text-lg shadow-sm transition ${
+      onClick={(event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        toggleFavorite(product);
+      }}
+      className={`flex h-9 w-9 items-center justify-center rounded-full border text-base shadow-sm transition md:h-11 md:w-11 md:text-lg ${
         active
           ? "border-neutral-950 bg-neutral-950 text-white"
           : "border-neutral-200 bg-white text-neutral-950 hover:border-neutral-950"
