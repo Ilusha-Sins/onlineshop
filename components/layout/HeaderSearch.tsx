@@ -29,19 +29,19 @@ const HeaderSearch = () => {
   return (
     <form
       onSubmit={onSubmitHandler}
-      className="flex w-full items-center rounded-full border border-neutral-200 bg-neutral-100 p-1 transition focus-within:border-neutral-950 focus-within:bg-white"
+      className="flex h-11 w-full items-center rounded-full border border-neutral-200 bg-white/75 p-1 shadow-sm shadow-black/[0.02] transition focus-within:border-neutral-950 focus-within:bg-white"
     >
       <input
         type="search"
         value={searchValue}
         onChange={(event) => setSearchValue(event.target.value)}
-        placeholder="Пошук товарів..."
-        className="h-11 flex-1 bg-transparent px-5 text-sm text-neutral-950 outline-none placeholder:text-neutral-400"
+        placeholder="Знайти річ, бренд або категорію..."
+        className="min-w-0 flex-1 bg-transparent px-5 text-sm text-neutral-950 outline-none placeholder:text-neutral-400"
       />
 
       <button
         type="submit"
-        className="h-10 rounded-full bg-neutral-950 px-5 text-xs font-semibold text-white transition hover:bg-neutral-800"
+        className="inline-flex h-9 shrink-0 items-center justify-center rounded-full bg-neutral-950 px-5 text-xs font-semibold !text-white transition hover:bg-neutral-800"
       >
         Шукати
       </button>

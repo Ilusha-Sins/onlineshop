@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import Container from "@/components/ui/Container";
@@ -6,6 +7,7 @@ import ProductGallery from "@/components/product/ProductGallery";
 import ProductInfo from "@/components/product/ProductInfo";
 import ProductContactBox from "@/components/product/ProductContactBox";
 import ProductGrid from "@/components/product/ProductGrid";
+import SectionHeader from "@/components/ui/SectionHeader";
 
 import { sanityClient } from "@/lib/sanity/client";
 import {
@@ -34,15 +36,15 @@ export async function generateMetadata({
 
   if (!product) {
     return {
-      title: "Товар не знайдено — MyShop",
+      title: "Товар не знайдено — Studio",
     };
   }
 
   return {
-    title: `${product.name} — MyShop`,
+    title: `${product.name} — Studio`,
     description:
       product.description ||
-      `Переглянути товар ${product.name} у каталозі MyShop.`,
+      `Переглянути товар ${product.name} у каталозі одягу.`,
   };
 }
 
@@ -66,10 +68,33 @@ export default async function ProductPage({ params }: ProductPageProps) {
     : [];
 
   return (
-    <main className="min-h-screen bg-neutral-50">
-      <section className="py-10 md:py-16">
+    <main className="min-h-screen bg-[#F7F7F5]">
+      <section className="border-b border-neutral-200/80 py-6 md:py-10">
         <Container>
-          <div className="grid gap-10 lg:grid-cols-[1fr_0.9fr_360px]">
+          <nav className="mb-6 flex flex-wrap items-center gap-2 text-sm text-neutral-500">
+            <Link href="/" className="transition hover:text-neutral-950">
+              Головна
+            </Link>
+
+            <span className="text-neutral-300">/</span>
+
+            {product.category?.slug?.current ? (
+              <>
+                <Link
+                  href={`/category/${product.category.slug.current}`}
+                  className="transition hover:text-neutral-950"
+                >
+                  {product.category.title}
+                </Link>
+
+                <span className="text-neutral-300">/</span>
+              </>
+            ) : null}
+
+            <span className="text-neutral-950">{product.name}</span>
+          </nav>
+
+          <div className="grid gap-5 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] xl:grid-cols-[minmax(0,1.05fr)_minmax(0,0.72fr)_360px]">
             <ProductGallery
               images={product.images}
               productName={product.name}
@@ -83,17 +108,13 @@ export default async function ProductPage({ params }: ProductPageProps) {
       </section>
 
       {relatedProducts?.length ? (
-        <section className="border-t border-neutral-200 bg-white py-14">
+        <section className="py-12 md:py-16">
           <Container>
-            <div className="mb-8">
-              <p className="text-sm uppercase tracking-[0.3em] text-neutral-400">
-                Related products
-              </p>
-
-              <h2 className="mt-2 text-3xl font-bold text-neutral-950">
-                Схожі товари
-              </h2>
-            </div>
+            <SectionHeader
+              eyebrow="Related products"
+              title="Схожі товари"
+              description="Ще кілька позицій із цієї категорії, які можуть підійти до твого образу."
+            />
 
             <ProductGrid products={relatedProducts} />
           </Container>

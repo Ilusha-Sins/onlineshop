@@ -1,9 +1,10 @@
 interface PriceProps {
   price: number;
   oldPrice?: number;
+  className?: string;
 }
 
-const formatPrice = (price: number) => {
+export const formatPrice = (price: number) => {
   return new Intl.NumberFormat("uk-UA", {
     style: "currency",
     currency: "UAH",
@@ -11,17 +12,17 @@ const formatPrice = (price: number) => {
   }).format(price);
 };
 
-const Price: React.FC<PriceProps> = ({ price, oldPrice }) => {
-  const hasDiscount = oldPrice && oldPrice > price;
+const Price: React.FC<PriceProps> = ({ price, oldPrice, className = "" }) => {
+  const hasDiscount = typeof oldPrice === "number" && oldPrice > price;
 
   return (
-    <div className="flex flex-col gap-0.5 sm:flex-row sm:items-center sm:gap-2">
-      <span className="text-sm font-bold text-neutral-950 md:text-lg">
+    <div className={`flex flex-wrap items-baseline gap-x-2 gap-y-1 ${className}`}>
+      <span className="text-sm font-semibold tracking-tight text-neutral-950 md:text-base">
         {formatPrice(price)}
       </span>
 
       {hasDiscount ? (
-        <span className="text-xs text-neutral-400 line-through md:text-sm">
+        <span className="text-xs font-medium text-neutral-400 line-through md:text-sm">
           {formatPrice(oldPrice)}
         </span>
       ) : null}

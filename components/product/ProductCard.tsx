@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 import FavoriteButton from "@/components/favorites/FavoriteButton";
+import Badge from "@/components/ui/Badge";
 import Price from "@/components/ui/Price";
 import { urlFor } from "@/lib/sanity/client";
 import type { Product, SanityImage } from "@/lib/types/product";
@@ -23,53 +24,57 @@ const getMainProductImage = (product: Product): SanityImage | undefined => {
 const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const mainImage = getMainProductImage(product);
   const productHref = `/products/${product.slug.current}`;
-  const hasDiscount = product.oldPrice && product.oldPrice > product.price;
+  const hasDiscount =
+    typeof product.oldPrice === "number" && product.oldPrice > product.price;
+  const isUnavailable = product.isAvailable === false;
 
   return (
-    <article className="group relative overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-neutral-200 transition duration-300 hover:-translate-y-1 hover:shadow-xl md:rounded-3xl">
-      <div className="absolute right-2 top-2 z-10 md:right-4 md:top-4">
+    <article className="group relative h-full overflow-hidden rounded-[1.5rem] border border-neutral-200/80 bg-white shadow-sm shadow-black/[0.02] transition duration-300 hover:-translate-y-1 hover:border-neutral-300 hover:shadow-xl hover:shadow-black/[0.06] md:rounded-[1.75rem]">
+      <div className="absolute right-3 top-3 z-20 md:right-4 md:top-4">
         <FavoriteButton product={product} />
       </div>
 
-      <Link href={productHref} className="block">
-        <div className="relative aspect-[3/4] overflow-hidden bg-neutral-100">
+      <Link href={productHref} className="flex h-full flex-col">
+        <div className="relative aspect-[3/4] overflow-hidden bg-[#F1F1EE]">
           {mainImage ? (
             <Image
-              src={urlFor(mainImage).width(700).height(900).url()}
+              src={urlFor(mainImage).width(900).height(1200).url()}
               alt={product.name}
               fill
-              className="object-cover transition duration-700 group-hover:scale-105"
+              className="object-cover transition duration-700 ease-out group-hover:scale-[1.035]"
               sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
             />
           ) : (
-            <div className="flex h-full items-center justify-center px-3 text-center text-xs text-neutral-400 md:text-sm">
+            <div className="flex h-full items-center justify-center px-4 text-center text-xs font-medium text-neutral-400 md:text-sm">
               Немає фото
             </div>
           )}
 
-          {hasDiscount ? (
-            <span className="absolute left-2 top-2 rounded-full bg-neutral-950 px-2.5 py-1 text-[10px] font-semibold text-white md:left-4 md:top-4 md:px-3 md:text-xs">
-              Sale
-            </span>
-          ) : null}
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/20 to-transparent opacity-0 transition duration-300 group-hover:opacity-100" />
 
-          {product.isAvailable === false ? (
-            <span className="absolute bottom-2 left-2 rounded-full bg-white px-2.5 py-1 text-[10px] font-semibold text-neutral-950 md:bottom-4 md:left-4 md:px-3 md:text-xs">
-              Немає
-            </span>
-          ) : null}
+          <div className="absolute left-3 top-3 z-10 flex flex-wrap gap-2 md:left-4 md:top-4">
+            {hasDiscount ? <Badge variant="sale">Sale</Badge> : null}
+
+            {isUnavailable ? (
+              <Badge variant="outline" className="normal-case tracking-normal">
+                Немає
+              </Badge>
+            ) : null}
+          </div>
         </div>
 
-        <div className="p-3 md:p-4">
-          <p className="text-[10px] uppercase tracking-[0.18em] text-neutral-400 md:text-xs md:tracking-[0.2em]">
-            {product.category?.title || "Товар"}
-          </p>
+        <div className="flex flex-1 flex-col p-4 md:p-5">
+          <div className="min-h-[4.8rem]">
+            <p className="truncate text-[10px] font-medium uppercase tracking-[0.22em] text-neutral-400 md:text-[11px]">
+              {product.category?.title || product.brand || "Товар"}
+            </p>
 
-          <h3 className="mt-1.5 line-clamp-2 text-sm font-semibold leading-5 text-neutral-950 md:mt-2 md:text-base">
-            {product.name}
-          </h3>
+            <h3 className="mt-2 line-clamp-2 text-sm font-semibold leading-5 tracking-tight text-neutral-950 md:text-base md:leading-6">
+              {product.name}
+            </h3>
+          </div>
 
-          <div className="mt-2 md:mt-3">
+          <div className="mt-auto pt-3">
             <Price price={product.price} oldPrice={product.oldPrice} />
           </div>
         </div>

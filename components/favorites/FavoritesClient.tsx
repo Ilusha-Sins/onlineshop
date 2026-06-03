@@ -4,79 +4,81 @@ import Link from "next/link";
 
 import { useFavorites } from "@/hooks/useFavorites";
 import Container from "@/components/ui/Container";
+import EmptyState from "@/components/ui/EmptyState";
 import ProductGrid from "@/components/product/ProductGrid";
+import SectionHeader from "@/components/ui/SectionHeader";
 
 const FavoritesClient = () => {
   const { favorites, isLoaded } = useFavorites();
 
   if (!isLoaded) {
     return (
-      <main className="min-h-screen bg-neutral-50 py-16">
+      <main className="min-h-screen bg-[#F7F7F5] py-16">
         <Container>
-          <p className="text-neutral-500">Завантаження...</p>
+          <div className="rounded-[2rem] border border-neutral-200/80 bg-white p-8 shadow-sm shadow-black/[0.02]">
+            <p className="text-sm text-neutral-500">Завантаження обраного...</p>
+          </div>
         </Container>
       </main>
     );
   }
 
   return (
-    <main className="min-h-screen bg-neutral-50">
-      <section className="border-b border-neutral-200 bg-white py-14">
+    <main className="min-h-screen bg-[#F7F7F5]">
+      <section className="border-b border-neutral-200/80 py-10 md:py-14">
         <Container>
-          <p className="text-sm uppercase tracking-[0.35em] text-neutral-400">
-            Favorites
-          </p>
+          <div className="rounded-[2rem] border border-neutral-200/80 bg-white p-6 shadow-sm shadow-black/[0.02] md:p-10">
+            <p className="text-xs font-medium uppercase tracking-[0.34em] text-neutral-400">
+              Обране
+            </p>
 
-          <h1 className="mt-4 text-4xl font-bold tracking-tight text-neutral-950 md:text-6xl">
-            Обране
-          </h1>
+            <h1 className="mt-5 max-w-3xl text-5xl font-semibold tracking-[-0.06em] text-neutral-950 md:text-7xl">
+              Збережені речі
+            </h1>
 
-          <p className="mt-4 max-w-2xl leading-7 text-neutral-500">
-            Тут зберігаються товари, які ви додали в обране. Дані зберігаються
-            у браузері.
-          </p>
+            <p className="mt-6 max-w-2xl text-sm leading-7 text-neutral-500 md:text-base md:leading-8">
+              Тут зберігаються товари, які ти додав в обране. Список
+              зберігається у браузері.
+            </p>
+          </div>
         </Container>
       </section>
 
-      <section className="py-12">
+      <section className="py-12 md:py-16">
         <Container>
           {favorites.length ? (
             <>
-              <div className="mb-8 flex items-end justify-between">
-                <div>
-                  <p className="text-sm uppercase tracking-[0.3em] text-neutral-400">
-                    Saved products
-                  </p>
+              <div className="mb-8 grid gap-6 lg:grid-cols-[1fr_auto] lg:items-end">
+                <SectionHeader
+                  className="mb-0"
+                  eyebrow="Saved products"
+                  title="Обрані товари"
+                  description={`Товарів у списку: ${favorites.length}`}
+                />
 
-                  <h2 className="mt-2 text-3xl font-bold text-neutral-950">
-                    Збережені товари
-                  </h2>
-                </div>
-
-                <p className="text-sm text-neutral-500">
-                  Товарів: {favorites.length}
-                </p>
+                <Link
+                  href="/search"
+                  className="inline-flex h-11 items-center justify-center rounded-full border border-neutral-200 bg-white px-5 text-sm font-semibold text-neutral-700 transition hover:border-neutral-950 hover:text-neutral-950"
+                >
+                  Знайти ще
+                </Link>
               </div>
 
               <ProductGrid products={favorites} />
             </>
           ) : (
-            <div className="rounded-[2rem] border border-dashed border-neutral-300 bg-white p-10 text-center">
-              <h2 className="text-2xl font-bold text-neutral-950">
-                Обраних товарів поки немає
-              </h2>
-
-              <p className="mt-3 text-neutral-500">
-                Натисни сердечко на картці товару, щоб зберегти його тут.
-              </p>
-
-              <Link
-                href="/"
-                className="mt-6 inline-flex rounded-full bg-neutral-950 px-6 py-3 text-sm font-semibold text-white transition hover:bg-neutral-800"
-              >
-                На головну
-              </Link>
-            </div>
+            <EmptyState
+              title="Обраних товарів поки немає"
+              description="Натисни сердечко на картці товару, щоб зберегти його тут."
+              action={
+                <Link
+                  href="/"
+                  className="inline-flex h-11 items-center justify-center rounded-full bg-neutral-950 px-6 text-sm font-semibold !text-white transition hover:bg-neutral-800"
+                >
+                  На головну
+                </Link>
+              }
+            />
           )}
         </Container>
       </section>

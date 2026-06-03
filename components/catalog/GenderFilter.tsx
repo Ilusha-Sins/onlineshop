@@ -1,15 +1,18 @@
 import Link from "next/link";
-import { SORT_OPTIONS, type CatalogSort } from "@/lib/utils/catalogSort";
+import {
+  GENDER_FILTER_OPTIONS,
+  type CatalogGender,
+} from "@/lib/utils/genderFilter";
 
-interface CatalogSortProps {
-  currentSort: CatalogSort;
+interface GenderFilterProps {
+  currentGender: CatalogGender;
   basePath: string;
   queryParams?: Record<string, string | undefined>;
 }
 
 const getHref = (
   basePath: string,
-  sort: CatalogSort,
+  gender: CatalogGender,
   queryParams?: Record<string, string | undefined>
 ) => {
   const params = new URLSearchParams();
@@ -22,10 +25,10 @@ const getHref = (
 
   params.delete("page");
 
-  if (sort !== "newest") {
-    params.set("sort", sort);
+  if (gender !== "all") {
+    params.set("gender", gender);
   } else {
-    params.delete("sort");
+    params.delete("gender");
   }
 
   const queryString = params.toString();
@@ -33,20 +36,20 @@ const getHref = (
   return queryString ? `${basePath}?${queryString}` : basePath;
 };
 
-const CatalogSort: React.FC<CatalogSortProps> = ({
-  currentSort,
+const GenderFilter: React.FC<GenderFilterProps> = ({
+  currentGender,
   basePath,
   queryParams,
 }) => {
   return (
-    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
+    <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
       <span className="text-xs font-medium uppercase tracking-[0.22em] text-neutral-400">
-        Сортувати
+        Лінія
       </span>
 
       <div className="flex flex-wrap gap-2">
-        {SORT_OPTIONS.map((option) => {
-          const isActive = option.value === currentSort;
+        {GENDER_FILTER_OPTIONS.map((option) => {
+          const isActive = option.value === currentGender;
 
           return (
             <Link
@@ -67,4 +70,4 @@ const CatalogSort: React.FC<CatalogSortProps> = ({
   );
 };
 
-export default CatalogSort;
+export default GenderFilter;

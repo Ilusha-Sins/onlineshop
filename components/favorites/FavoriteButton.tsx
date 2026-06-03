@@ -15,19 +15,26 @@ const FavoriteButton: React.FC<FavoriteButtonProps> = ({ product }) => {
   return (
     <button
       type="button"
+      disabled={!isLoaded}
       onClick={(event) => {
         event.preventDefault();
         event.stopPropagation();
+
+        if (!isLoaded) {
+          return;
+        }
+
         toggleFavorite(product);
       }}
-      className={`flex h-9 w-9 items-center justify-center rounded-full border text-base shadow-sm transition md:h-11 md:w-11 md:text-lg ${
+      className={`flex h-9 w-9 items-center justify-center rounded-full border text-base shadow-sm backdrop-blur transition duration-200 disabled:cursor-not-allowed disabled:opacity-70 md:h-10 md:w-10 ${
         active
-          ? "border-neutral-950 bg-neutral-950 text-white"
-          : "border-neutral-200 bg-white text-neutral-950 hover:border-neutral-950"
+          ? "border-neutral-950 bg-neutral-950 !text-white hover:bg-neutral-800"
+          : "border-white/80 bg-white/90 text-neutral-950 hover:border-neutral-950 hover:bg-white"
       }`}
       aria-label={active ? "Прибрати з обраного" : "Додати в обране"}
+      aria-pressed={active}
     >
-      {active ? "♥" : "♡"}
+      <span aria-hidden="true">{active ? "♥" : "♡"}</span>
     </button>
   );
 };

@@ -1,3 +1,7 @@
+export type CatalogAudience = "men" | "women";
+
+export type LegacyGender = "women" | "men" | "unisex" | "kids";
+
 export type SanitySlug = {
   current: string;
 };
@@ -16,10 +20,22 @@ export type ProductColor = {
   hex?: string;
 };
 
+export type Brand = {
+  _id: string;
+  title: string;
+  slug: SanitySlug;
+  logo?: SanityImage;
+  image?: SanityImage;
+  description?: string;
+  order?: number;
+  isVisible?: boolean;
+};
+
 export type Category = {
   _id: string;
   title: string;
   slug: SanitySlug;
+  audiences?: CatalogAudience[];
   image?: SanityImage;
   order?: number;
   isVisible?: boolean;
@@ -33,16 +49,19 @@ export type Product = {
   images?: SanityImage[];
   price: number;
   oldPrice?: number;
+  audiences?: CatalogAudience[];
+  categories?: Category[];
+  category?: Category;
   brand?: string;
+  brandRef?: Brand;
   description?: string;
   sizes?: string[];
   colors?: ProductColor[];
   material?: string;
-  gender?: "women" | "men" | "unisex" | "kids";
+  gender?: LegacyGender;
   season?: "spring" | "summer" | "autumn" | "winter" | "all-season";
   isAvailable?: boolean;
   isFeatured?: boolean;
   isVisible?: boolean;
   createdAt?: string;
-  category?: Category;
 };

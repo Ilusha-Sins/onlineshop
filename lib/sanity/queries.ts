@@ -1,6 +1,42 @@
 import type { CatalogSort } from "@/lib/utils/catalogSort";
 import { getSanityOrderBySort } from "@/lib/utils/catalogSort";
 
+const productAudienceFilter = `
+  (
+    coalesce($gender, "all") == "all" ||
+    (
+      coalesce($gender, "all") == "men" &&
+      (
+        "men" in audiences ||
+        gender in ["men", "unisex"]
+      )
+    ) ||
+    (
+      coalesce($gender, "all") == "women" &&
+      (
+        "women" in audiences ||
+        gender in ["women", "unisex"]
+      )
+    )
+  )
+`;
+
+const categoryAudienceFilter = `
+  (
+    coalesce($gender, "all") == "all" ||
+    !defined(audiences) ||
+    count(audiences) == 0 ||
+    coalesce($gender, "all") in audiences
+  )
+`;
+
+const productCategoryMembershipFilter = `
+  (
+    category._ref in $categoryIds ||
+    count((categories[]._ref)[@ in $categoryIds]) > 0
+  )
+`;
+
 export const productFields = `
   _id,
   name,
@@ -8,7 +44,48 @@ export const productFields = `
   images,
   price,
   oldPrice,
+  audiences,
+  categories[]->{
+    _id,
+    title,
+    slug,
+    audiences,
+    image,
+    order,
+    isVisible,
+    parent->{
+      _id,
+      title,
+      slug,
+      audiences
+    }
+  },
+  category->{
+    _id,
+    title,
+    slug,
+    audiences,
+    image,
+    order,
+    isVisible,
+    parent->{
+      _id,
+      title,
+      slug,
+      audiences
+    }
+  },
   brand,
+  brandRef->{
+    _id,
+    title,
+    slug,
+    logo,
+    image,
+    description,
+    order,
+    isVisible
+  },
   description,
   sizes,
   colors,
@@ -18,26 +95,58 @@ export const productFields = `
   isAvailable,
   isFeatured,
   isVisible,
-  createdAt,
-  category->{
+  createdAt
+`;
+
+export const categoryFields = `
+  _id,
+  title,
+  slug,
+  audiences,
+  image,
+  order,
+  isVisible,
+  parent->{
     _id,
     title,
     slug,
-    image,
-    order,
-    isVisible,
-    parent->{
-      _id,
-      title,
-      slug
-    }
+    audiences
   }
+`;
+
+export const brandFields = `
+  _id,
+  title,
+  slug,
+  logo,
+  image,
+  description,
+  order,
+  isVisible
 `;
 
 export const allProductsQuery = `
   *[_type == "product" && isVisible != false] | order(createdAt desc) {
     ${productFields}
   }
+`;
+
+export const getPaginatedProductsByAudienceQuery = (sort: CatalogSort) => `
+  *[
+    _type == "product" &&
+    isVisible != false &&
+    ${productAudienceFilter}
+  ] | order(${getSanityOrderBySort(sort)}) [$start...$end] {
+    ${productFields}
+  }
+`;
+
+export const productsByAudienceCountQuery = `
+  count(*[
+    _type == "product" &&
+    isVisible != false &&
+    ${productAudienceFilter}
+  ])
 `;
 
 export const rootCategoriesQuery = `
@@ -47,12 +156,19 @@ export const rootCategoriesQuery = `
     defined(slug.current) &&
     !defined(parent)
   ] | order(order asc, title asc) {
-    _id,
-    title,
-    slug,
-    image,
-    order,
-    isVisible
+    ${categoryFields}
+  }
+`;
+
+export const getRootCategoriesByGenderQuery = `
+  *[
+    _type == "category" &&
+    isVisible != false &&
+    defined(slug.current) &&
+    !defined(parent) &&
+    ${categoryAudienceFilter}
+  ] | order(order asc, title asc) {
+    ${categoryFields}
   }
 `;
 
@@ -62,17 +178,18 @@ export const allCategoriesQuery = `
     isVisible != false &&
     defined(slug.current)
   ] | order(order asc, title asc) {
-    _id,
-    title,
-    slug,
-    image,
-    order,
-    isVisible,
-    parent->{
-      _id,
-      title,
-      slug
-    }
+    ${categoryFields}
+  }
+`;
+
+export const getAllCategoriesByGenderQuery = `
+  *[
+    _type == "category" &&
+    isVisible != false &&
+    defined(slug.current) &&
+    ${categoryAudienceFilter}
+  ] | order(order asc, title asc) {
+    ${categoryFields}
   }
 `;
 
@@ -82,17 +199,7 @@ export const categoryBySlugQuery = `
     slug.current == $slug &&
     isVisible != false
   ][0] {
-    _id,
-    title,
-    slug,
-    image,
-    order,
-    isVisible,
-    parent->{
-      _id,
-      title,
-      slug
-    }
+    ${categoryFields}
   }
 `;
 
@@ -100,7 +207,7 @@ export const productsByCategoryIdsQuery = `
   *[
     _type == "product" &&
     isVisible != false &&
-    category._ref in $categoryIds
+    ${productCategoryMembershipFilter}
   ] | order(createdAt desc) {
     ${productFields}
   }
@@ -110,7 +217,8 @@ export const getPaginatedProductsByCategoryIdsQuery = (sort: CatalogSort) => `
   *[
     _type == "product" &&
     isVisible != false &&
-    category._ref in $categoryIds
+    ${productCategoryMembershipFilter} &&
+    ${productAudienceFilter}
   ] | order(${getSanityOrderBySort(sort)}) [$start...$end] {
     ${productFields}
   }
@@ -120,7 +228,8 @@ export const productsByCategoryIdsCountQuery = `
   count(*[
     _type == "product" &&
     isVisible != false &&
-    category._ref in $categoryIds
+    ${productCategoryMembershipFilter} &&
+    ${productAudienceFilter}
   ])
 `;
 
@@ -138,8 +247,11 @@ export const relatedProductsQuery = `
   *[
     _type == "product" &&
     isVisible != false &&
-    category._ref == $categoryId &&
-    slug.current != $slug
+    slug.current != $slug &&
+    (
+      category._ref == $categoryId ||
+      count((categories[]._ref)[@ == $categoryId]) > 0
+    )
   ] | order(createdAt desc)[0...4] {
     ${productFields}
   }
@@ -152,11 +264,13 @@ export const searchProductsQuery = `
     (
       name match $searchPattern ||
       brand match $searchPattern ||
+      brandRef->title match $searchPattern ||
       description match $searchPattern ||
       material match $searchPattern ||
       gender match $searchPattern ||
       season match $searchPattern ||
-      category->title match $searchPattern
+      category->title match $searchPattern ||
+      count((categories[]->title)[@ match $searchPattern]) > 0
     )
   ] | order(createdAt desc) {
     ${productFields}
@@ -167,14 +281,17 @@ export const getPaginatedSearchProductsQuery = (sort: CatalogSort) => `
   *[
     _type == "product" &&
     isVisible != false &&
+    ${productAudienceFilter} &&
     (
       name match $searchPattern ||
       brand match $searchPattern ||
+      brandRef->title match $searchPattern ||
       description match $searchPattern ||
       material match $searchPattern ||
       gender match $searchPattern ||
       season match $searchPattern ||
-      category->title match $searchPattern
+      category->title match $searchPattern ||
+      count((categories[]->title)[@ match $searchPattern]) > 0
     )
   ] | order(${getSanityOrderBySort(sort)}) [$start...$end] {
     ${productFields}
@@ -185,14 +302,57 @@ export const searchProductsCountQuery = `
   count(*[
     _type == "product" &&
     isVisible != false &&
+    ${productAudienceFilter} &&
     (
       name match $searchPattern ||
       brand match $searchPattern ||
+      brandRef->title match $searchPattern ||
       description match $searchPattern ||
       material match $searchPattern ||
       gender match $searchPattern ||
       season match $searchPattern ||
-      category->title match $searchPattern
+      category->title match $searchPattern ||
+      count((categories[]->title)[@ match $searchPattern]) > 0
     )
+  ])
+`;
+
+export const allBrandsQuery = `
+  *[
+    _type == "brand" &&
+    isVisible != false &&
+    defined(slug.current)
+  ] | order(order asc, title asc) {
+    ${brandFields}
+  }
+`;
+
+export const brandBySlugQuery = `
+  *[
+    _type == "brand" &&
+    slug.current == $slug &&
+    isVisible != false
+  ][0] {
+    ${brandFields}
+  }
+`;
+
+export const getPaginatedProductsByBrandIdQuery = (sort: CatalogSort) => `
+  *[
+    _type == "product" &&
+    isVisible != false &&
+    brandRef._ref == $brandId &&
+    ${productAudienceFilter}
+  ] | order(${getSanityOrderBySort(sort)}) [$start...$end] {
+    ${productFields}
+  }
+`;
+
+export const productsByBrandIdCountQuery = `
+  count(*[
+    _type == "product" &&
+    isVisible != false &&
+    brandRef._ref == $brandId &&
+    ${productAudienceFilter}
   ])
 `;
